@@ -1,5 +1,6 @@
 const ExcelJS = require('exceljs');
 const { getStorage } = require('../storage');
+const cfg = require('../config');
 const F = require('./fields');
 
 // ---------------------------------------------------------------- utilidades
@@ -437,13 +438,37 @@ function applyModelToWorkbook(workbook, model) {
 
 // ---------------------------------------------------------------- API de servicio
 
+function buildEmptyWorkbook(model) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.addWorksheet('Arreglo Bus');
+  workbook.addWorksheet(F.CONFIG_SHEET);
+  return applyModelToWorkbook(workbook, model);
+}
+
+// Cuando el storage remoto (github) aún no contiene el archivo, se siembra un
+// modelo vacío en la primera lectura para que la app arranque utilizable.
+async function loadOrSeedBuffer() {
+  try {
+    return await getStorage().read();
+  } catch (err) {
+    const isMissing = /no se encontro|not found/i.test(err.message || '');
+    if (isMissing && cfg.STORAGE_TYPE === 'github') {
+      const model = { config: { ...F.DEFAULT_CONFIG }, reservas: [], tareas: [] };
+      const out = await buildEmptyWorkbook(model).xlsx.writeBuffer();
+      await getStorage().write(Buffer.from(out));
+      return Buffer.from(out);
+    }
+    throw err;
+  }
+}
+
 async function getModel() {
-  const buffer = await getStorage().read();
+  const buffer = await loadOrSeedBuffer();
   return readModelFromBuffer(buffer);
 }
 
 async function saveModel(model) {
-  const buffer = await getStorage().read();
+  const buffer = await loadOrSeedBuffer();
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
   stripFormulas(workbook);
@@ -455,7 +480,7 @@ async function saveModel(model) {
 }
 
 async function exportXlsx() {
-  const buffer = await getStorage().read();
+  const buffer = await loadOrSeedBuffer();
   return buffer;
 }
 

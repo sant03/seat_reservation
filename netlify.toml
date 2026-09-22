@@ -1,0 +1,19 @@
+[build]
+  command = "cd frontend && npm ci && npm run build && cd ../backend && npm ci"
+  publish = "frontend/dist/frontend/browser"
+  functions = "backend/.functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# La API Express corre como una sola función serverless (serverless-http)
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
+# SPA: cualquier ruta que no sea un archivo real va a index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
