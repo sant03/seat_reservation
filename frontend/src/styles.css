@@ -1,0 +1,139 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* ===== Variables de tema (claro / oscuro) ===== */
+:root {
+  --bg: #f0f4ff;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --hover: #f1f5f9;
+  --text: #1e293b;
+  --text-2: #475569;
+  --muted: rgba(0, 0, 0, 0.55);
+  --muted-strong: rgba(0, 0, 0, 0.7);
+  --border: rgba(0, 0, 0, 0.1);
+  --border-2: rgba(0, 0, 0, 0.15);
+  --border-soft: rgba(0, 0, 0, 0.06);
+  --red-text: #b3261e;
+  --red-bg: #fdecea;
+  --red-border: #fecaca;
+  --green-text: #1a7f37;
+  --green-bg: #e6f4ea;
+  --amber-text: #b54708;
+  --amber-bg: #fef7e0;
+  --gray-text: #555555;
+  --gray-bg: #f1f1f1;
+  --acc-green: #16a34a;
+  --acc-blue: #2563eb;
+  --acc-red: #dc2626;
+  --acc-orange: #ea580c;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+html.dark {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #243244;
+  --hover: #334155;
+  --text: #e2e8f0;
+  --text-2: #94a3b8;
+  --muted: rgba(226, 232, 240, 0.6);
+  --muted-strong: rgba(226, 232, 240, 0.78);
+  --border: rgba(255, 255, 255, 0.12);
+  --border-2: rgba(255, 255, 255, 0.22);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --red-text: #f87171;
+  --red-bg: rgba(239, 68, 68, 0.16);
+  --red-border: rgba(248, 113, 113, 0.45);
+  --green-text: #4ade80;
+  --green-bg: rgba(22, 163, 74, 0.18);
+  --amber-text: #fbbf24;
+  --amber-bg: rgba(217, 119, 6, 0.18);
+  --gray-text: #cbd5e1;
+  --gray-bg: rgba(148, 163, 184, 0.16);
+  --acc-green: #4ade80;
+  --acc-blue: #60a5fa;
+  --acc-red: #f87171;
+  --acc-orange: #fb923c;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Diálogos: 700px en escritorio, ajustados al viewport en pantallas pequeñas ===== */
+body .cdk-overlay-pane.mat-mdc-dialog-panel {
+  min-width: min(700px, 92vw);
+}
+
+/* ===== Botones estilo "pill" (tabs de asistencia) ===== */
+.pill,
+.pill-primary,
+.pill-warn {
+  border-radius: 999px !important;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  transition: all 0.2s ease;
+}
+
+.pill {
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+  color: var(--text-2) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.pill:hover {
+  background: var(--hover) !important;
+  color: var(--text) !important;
+}
+
+.pill-primary {
+  border: none !important;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+}
+
+.pill-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45) !important;
+}
+
+.pill-warn {
+  border: 1px solid var(--red-border) !important;
+  background: var(--red-bg) !important;
+  color: var(--red-text) !important;
+  box-shadow: none !important;
+}
+
+.pill-warn:hover {
+  background: var(--red-bg) !important;
+  color: var(--red-text) !important;
+}
+
+.pill mat-icon,
+.pill-primary mat-icon,
+.pill-warn mat-icon {
+  color: inherit;
+}
+
+.pill:disabled,
+.pill-primary:disabled,
+.pill-warn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+.pill-sm {
+  min-height: 28px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  line-height: 28px !important;
+}
+
+.pill-sm mat-icon {
+  font-size: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+}

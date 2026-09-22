@@ -1,0 +1,130 @@
+<div class="page">
+  @if (model(); as m) {
+    <h1>Configuración</h1>
+
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>Nombre del evento</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <label class="campo">
+          <span class="campo-label">Nombre del evento</span>
+          <input class="campo-input" [ngModel]="eventoNombre()" (ngModelChange)="eventoNombre.set($event)" />
+        </label>
+        <div class="hint">Este nombre aparece en el título del Dashboard</div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>Parámetros del evento</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="grid">
+          <label class="campo">
+            <span class="campo-label">Capacidad del bus (puestos / día)</span>
+            <input class="campo-input" type="number" min="1" [ngModel]="capacidad()" (ngModelChange)="capacidad.set('' + $event)" />
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">Valor del cupo ida y vuelta</span>
+            <input class="campo-input" type="number" min="1" [ngModel]="valor()" (ngModelChange)="valor.set('' + $event)" />
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">Fecha día 1</span>
+            <input class="campo-input" type="date" [ngModel]="fecha1()" (ngModelChange)="fecha1.set($event)" />
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">Fecha día 2</span>
+            <input class="campo-input" type="date" [ngModel]="fecha2()" (ngModelChange)="fecha2.set($event)" />
+          </label>
+
+          <label class="campo">
+            <span class="campo-label">Fecha día 3</span>
+            <input class="campo-input" type="date" [ngModel]="fecha3()" (ngModelChange)="fecha3.set($event)" />
+          </label>
+        </div>
+
+        <div class="current">
+          Valor por puesto: <strong>{{ fmtMoney(valores()?.valor || 0) }}</strong> ·
+          Capacidad máxima: <strong>{{ valores()?.capacidad }} puestos</strong>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>Tareas / notas (una por línea)</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <label class="campo full">
+          <span class="campo-label">Ej. "Le entregué 145.000 a Eduardo Malabeth"</span>
+          <textarea
+            class="campo-input"
+            rows="4"
+            [ngModel]="tareas()"
+            (ngModelChange)="tareas.set($event)"
+          ></textarea>
+        </label>
+      </mat-card-content>
+    </mat-card>
+
+    <div class="savebar">
+      <button mat-stroked-button class="pill" (click)="aplicar()">
+        <mat-icon>tune</mat-icon> Aplicar cambios (sin guardar)
+      </button>
+    </div>
+
+    @if (state.error(); as err) {
+      <div class="errorbox">
+        <mat-icon>error_outline</mat-icon> {{ err }}
+        <button mat-button class="pill pill-sm" (click)="clearError()">Cerrar</button>
+      </div>
+    }
+
+    <mat-card class="card">
+      <mat-card-header>
+        <mat-card-title>Historial del Excel (git)</mat-card-title>
+        @if (lastSha(); as sha) {
+          <mat-card-subtitle>Último guardado: {{ sha.slice(0, 7) }}</mat-card-subtitle>
+        }
+      </mat-card-header>
+      <mat-card-content>
+        @if (history().length === 0) {
+          <p class="hint">
+            El historial aparece cuando el backend usa GitHub (STORAGE_TYPE=github).
+          </p>
+        } @else {
+          <mat-list>
+            @for (c of history(); track c.sha) {
+              <mat-list-item class="commit-item">
+                <div matListItemTitle class="commit-title">{{ c.message }}</div>
+                <div matListItemLine class="commit-meta">
+                  {{ commitDate(c) }} · {{ c.author }} · {{ c.sha.slice(0, 7) }}
+                </div>
+                <button mat-stroked-button class="pill pill-sm" matListItemMeta (click)="restaurar(c.sha)">Ver</button>
+              </mat-list-item>
+            }
+          </mat-list>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="card danger-zone">
+      <mat-card-header>
+        <mat-card-title>Zona de peligro</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="danger-text">
+          Reiniciar la base de datos eliminará todas las reservas actuales y dejará el sistema en blanco
+          para comenzar un nuevo evento. Esta acción no se puede deshacer.
+        </p>
+        <button mat-stroked-button class="pill pill-warn" (click)="resetDatabase()" [disabled]="saving()">
+          <mat-icon>delete_forever</mat-icon> Reiniciar base de datos
+        </button>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "asamblea-bus-backend",
+  "version": "1.0.0",
+  "description": "API para gestionar reservas de cupos de bus en un archivo Excel (Asamblea de Circuito).",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "express": "^4.19.2"
+  }
+}

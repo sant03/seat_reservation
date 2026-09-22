@@ -1,0 +1,103 @@
+<div class="page">
+  @if (loading()) {
+    <div class="loading">Cargando datos del Excel…</div>
+  } @else if (error()) {
+    <div class="errorbox">
+      <mat-icon>error_outline</mat-icon> {{ error() }}
+      <span class="spacer"></span>
+      <button mat-stroked-button class="pill pill-sm" routerLink="/config">Ir a configuración</button>
+    </div>
+  } @else if (model(); as m) {
+    <header class="page-head">
+      <div>
+        <h1>{{ m.config.eventoNombre || 'Asamblea de Circuito' }} — Reserva de bus</h1>
+        <p class="sub">Capacidad {{ m.config.capacidadBus }} puestos / día · Valor ${{ m.config.valorPuesto }} por cupo (ida y vuelta)</p>
+      </div>
+      <button mat-stroked-button class="pill" (click)="theme.toggle()">
+        <mat-icon>{{ theme.dark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+        {{ theme.dark() ? 'Modo claro' : 'Modo oscuro' }}
+      </button>
+    </header>
+
+    <div class="cards">
+      <mat-card class="card money">
+        <mat-card-content>
+          <mat-icon>payments</mat-icon>
+          <div>
+            <span class="label">Pagado</span>
+            <span class="big">{{ info()?.pagado }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="card money warn-card">
+        <mat-card-content>
+          <mat-icon>schedule</mat-icon>
+          <div>
+            <span class="label">Pendiente</span>
+            <span class="big">{{ info()?.pendiente }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="card money">
+        <mat-card-content>
+          <mat-icon>account_balance_wallet</mat-icon>
+          <div>
+            <span class="label">Recaudación esperada</span>
+            <span class="big">{{ info()?.esperado }}</span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="card money">
+        <mat-card-content>
+          <mat-icon>groups</mat-icon>
+          <div>
+            <span class="label">Personas inscritas</span>
+            <span class="big">{{ info()?.personas }}</span>
+            @if ((info()?.cancelados) ?? 0 > 0) {
+              <span class="sub">({{ info()?.cancelados }} canceladas)</span>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <h2>Cupos por día</h2>
+    <div class="dia-cards">
+      @for (d of dias; track d.key) {
+        <mat-card class="card dia">
+          <mat-card-content>
+            <div class="dia-head">
+              <strong>{{ d.name }}</strong>
+              <span class="fecha">{{ info()?.diasFechas[$index] }}</span>
+            </div>
+            <div class="puestos">
+              <span class="big">{{ puestos(d.key) }}</span>
+              <span> / {{ capacidad(d.key) }} puestos</span>
+            </div>
+            <mat-progress-bar
+              mode="determinate"
+              [value]="pct(d.key)"
+              [color]="sobrecupo(d.key) > 0 ? 'warn' : pct(d.key) >= 90 ? 'accent' : 'primary'"
+            ></mat-progress-bar>
+            @if (sobrecupo(d.key) > 0) {
+              <div class="over">⚠ {{ sobrecupo(d.key) }} puestos sobre la capacidad</div>
+            } @else {
+              <div class="ok">{{ m.totales.porDia[d.key].disponibles }} disponibles</div>
+            }
+            <div class="mini">
+              Recaudado: {{ fmtMoney(m.totales.porDia[d.key].pagado) }} ·
+              Pendiente: {{ fmtMoney(m.totales.porDia[d.key].pendiente) }}
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    <section class="panel-reservas">
+      <app-reservas></app-reservas>
+    </section>
+  }
+</div>

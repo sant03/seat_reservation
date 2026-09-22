@@ -1,0 +1,174 @@
+<div class="page">
+  @if (model(); as m) {
+    <header class="page-head">
+      <div>
+        <h1>Control de Asistencia</h1>
+        <p class="sub">{{ m.config.eventoNombre }}</p>
+      </div>
+    </header>
+
+    <div class="day-tabs">
+      @for (d of dias; track d.key) {
+        <button class="day-tab" [class.activo]="diaSel() === d.key" (click)="setDia(d.key)">
+          <mat-icon>{{ d.key === 'dia1' ? 'today' : d.key === 'dia2' ? 'calendar_view_day' : 'date_range' }}</mat-icon>
+          {{ d.name }}
+          <span class="fecha-tab">· {{ fechaDia(d.key) }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="resumen">
+      <mat-card class="resumen-card">
+        <mat-card-content>
+          <div class="resumen-item">
+            <mat-icon>groups</mat-icon>
+            <div>
+              <span class="resumen-label">Inscritos (día)</span>
+              <span class="resumen-value">{{ resumenDia().inscritos }}</span>
+            </div>
+          </div>
+          <mat-divider vertical class="res-divider"></mat-divider>
+          <div class="resumen-item">
+            <mat-icon>airline_seat_recline_extra</mat-icon>
+            <div>
+              <span class="resumen-label">Puestos del día</span>
+              <span class="resumen-value">{{ resumenDia().totalPuestos }}</span>
+            </div>
+          </div>
+          <mat-divider vertical class="res-divider"></mat-divider>
+          <div class="resumen-item verde">
+            <mat-icon>north_east</mat-icon>
+            <div>
+              <span class="resumen-label">En el bus (ida)</span>
+              <span class="resumen-value">{{ resumenDia().totalIda }} / {{ resumenDia().totalPuestos }}</span>
+            </div>
+          </div>
+          <mat-divider vertical class="res-divider"></mat-divider>
+          <div class="resumen-item azul">
+            <mat-icon>south_west</mat-icon>
+            <div>
+              <span class="resumen-label">Regresaron (venida)</span>
+              <span class="resumen-value">{{ resumenDia().totalVenida }} / {{ resumenDia().totalPuestos }}</span>
+            </div>
+          </div>
+          <mat-divider vertical class="res-divider"></mat-divider>
+          <div class="resumen-item rojo">
+            <mat-icon>person_off</mat-icon>
+            <div>
+              <span class="resumen-label">Faltan (ida)</span>
+              <span class="resumen-value">{{ resumenDia().faltanIda }}</span>
+            </div>
+          </div>
+          <mat-divider vertical class="res-divider"></mat-divider>
+          <div class="resumen-item naranja">
+            <mat-icon>pending</mat-icon>
+            <div>
+              <span class="resumen-label">Sin regresar</span>
+              <span class="resumen-value">{{ resumenDia().faltanVenida }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="filtros">
+      <input
+        type="text"
+        placeholder="Buscar por nombre..."
+        [value]="filtro()"
+        (input)="filtro.set($any($event.target).value)"
+        class="search-input"
+      />
+      <div class="pend-filter">
+        <span class="pend-label">Sin subir:</span>
+        <button class="day-tab" [class.activo]="filtroPendiente() === 'ida'" (click)="setPendiente('ida')">
+          <mat-icon>north_east</mat-icon> Ida
+        </button>
+        <button class="day-tab" [class.activo]="filtroPendiente() === 'venida'" (click)="setPendiente('venida')">
+          <mat-icon>south_west</mat-icon> Venida
+        </button>
+        <button class="day-tab" [class.activo]="filtroPendiente() === 'TODOS'" (click)="setPendiente('TODOS')">
+          <mat-icon>apps</mat-icon> Todos
+        </button>
+      </div>
+    </div>
+
+    <div class="personas">
+      @for (reserva of personasDelDia(); track reserva.id ?? reserva.nombre) {
+        <mat-card class="persona-card" [class.expandida]="isExpandida(reserva)">
+          <button
+            class="ac-head"
+            (click)="toggleCard(reserva)"
+            [attr.aria-expanded]="isExpandida(reserva)"
+          >
+            <div class="ac-ident">
+              <div class="ac-avatar" [style.background]="avColor(reserva.nombre)">
+                {{ avIniciales(reserva.nombre) }}
+              </div>
+              <div class="ac-info">
+                <div class="ac-nombre">{{ reserva.nombre }}</div>
+                <div class="ac-sub">
+                  {{ reserva[diaSel()].puestos }} puesto{{ reserva[diaSel()].puestos > 1 ? 's' : '' }} ·
+                  {{ diaNombre() }}
+                </div>
+              </div>
+            </div>
+            <mat-icon class="ac-chev">{{ isExpandida(reserva) ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+
+          @if (isExpandida(reserva)) {
+            <mat-card-content>
+              <div class="puestos-grid">
+                @for (puesto of [].constructor(reserva[diaSel()].puestos); track $index) {
+                  <div class="puesto-row">
+                    <span class="puesto-label">Puesto {{ $index + 1 }}</span>
+                    <div class="checkboxes">
+                      <label class="check-label">
+                        <mat-checkbox
+                          [checked]="getAsistencia(reserva, $index).ida"
+                          (change)="toggleIda(reserva, $index)"
+                          color="primary"
+                        >Ida</mat-checkbox>
+                      </label>
+                      <label class="check-label">
+                        <mat-checkbox
+                          [checked]="getAsistencia(reserva, $index).venida"
+                          (change)="toggleVenida(reserva, $index)"
+                          color="accent"
+                        >Venida</mat-checkbox>
+                      </label>
+                    </div>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          } @else {
+            <div class="ac-collapsed">
+              <label class="todos-check">
+                <mat-checkbox
+                  [checked]="todosIdaChecked(reserva)"
+                  [indeterminate]="todosIdaIndet(reserva)"
+                  (change)="marcarTodosIda(reserva, $event.checked)"
+                  color="primary"
+                >Todos ida</mat-checkbox>
+              </label>
+              <label class="todos-check">
+                <mat-checkbox
+                  [checked]="todosVenidaChecked(reserva)"
+                  [indeterminate]="todosVenidaIndet(reserva)"
+                  (change)="marcarTodosVenida(reserva, $event.checked)"
+                  color="accent"
+                >Todos venida</mat-checkbox>
+              </label>
+            </div>
+          }
+        </mat-card>
+      } @empty {
+        <div class="vacio">
+          <mat-icon>search_off</mat-icon>
+          <p>No hay pasajeros con cupo este día.</p>
+        </div>
+      }
+    </div>
+  }
+</div>

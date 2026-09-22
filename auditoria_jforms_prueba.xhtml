@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================================
+  AUDITORÍA DE ATRIBUTOS DE PRESENTACIÓN JFORMS
+  ============================================================================
+  PROPÓSITO:
+  Determinar qué atributos de presentación acepta tu framework jforms
+  para poder planificar correctamente la migración a la nueva UI.
+
+  CÓMO USAR:
+  1. Compilar este archivo con el compilador MVC (genera xhtml/css/xml + java).
+  2. Ejecutar la forma en el navegador.
+  3. Abrir el inspector (F12) y verificar:
+     a) ¿Se aplicó la clase que especificaste en cssClass?
+     b) ¿El atributo labelClass estiliza el <label>?
+     d) ¿wrapperClass creó un contenedor <div> alrededor?
+     e) ¿Siguen intactos id / bind / event?
+     f) Marcar con [OK] o [FALLA] en la columna RESULTADO de cada prueba.
+  ============================================================================
+  REGLA DE ORO:
+  Solo son SEGUROS los atributos que NO alteran bind / id / event.
+  La lógica (validaciones, eventos, listOfValues) vive en PL/SQL -> Java
+  y se enlaza por bind/id. JAMÁS los modifiques.
+  ============================================================================
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:jforms="http://www.tuorganizacion.com/jforms">
+<head>
+  <title>Prueba de Auditoría de Presentación JForms</title>
+
+  <!-- Design system propio: cargar DESPUÉS del CSS del framework -->
+  <link rel="stylesheet" type="text/css" href="design-system.css"/>
+
+  <style type="text/css">
+    /* Helper visual para la auditoría: solo en esta página de prueba.
+       Cada clase de auditoría tiene un borde de color distinto para
+       verificar visualmente si fue aplicada por el framework. */
+    .audit-field    { border: 2px solid #2563eb !important; }
+    .audit-label    { color: #dc2626 !important; font-weight: bold; }
+    .audit-wrapper  { border: 2px dashed #16a34a !important; padding: 8px; display:block; }
+    .audit-frame    { background: #f8fafc !important; border: 2px solid #9333ea !important; padding: 16px; }
+    .audit-btn      { background: #dc2626 !important; color: #fff !important; }
+    .audit-select   { border: 2px solid #0891b2 !important; }
+    .audit-textarea { border: 2px solid #ca8a04 !important; }
+    .audit-check    { outline: 2px solid #16a34a !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ======================================================================
+       NOTA SOBRE EL POSICIONAMIENTO ABSOLUTO
+       Por defecto jformsBuilder posiciona todo con left/top absoluto.
+       Para esta auditoría, tu CSS externo (design-system.css) deberá tener:
+         .audit-field, .audit-frame, etc { position: static !important; }
+       Eso probará que puedes neutralizar el absoluto vía tu propia hoja.
+       ====================================================================== -->
+
+  <h1>Auditoría de Atributos de Presentación JForms</h1>
+
+  <!-- ======================================================================
+       PRUEBA 1: jforms:frame
+       Se espera que el frame sea un contenedor. Verificar si:
+         - cssClass / frameClass / panelClass aplican clase al contenedor real
+         - El frame soporta atributos de grid (nframes, cols, rows, etc.)
+       RESULTADO: [ ]
+       ====================================================================== -->
+  <jforms:frame id="frame_principal"
+                bind="control.framePrincipal"
+                cssClass="audit-frame"
+                frameClass="audit-frame"
+                panelClass="audit-frame"
+                title="Panel Principal">
+    <p>Contenido del frame. ¿La clase audit-frame se aplicó al contenedor?</p>
+
+    <!-- ====================================================================
+         PRUEBA 2: jforms:textfield
+         - cssClass: clase del input renderizado
+         - labelClass: clase del <label>
+         - wrapperClass / containerClass: crea <div> alrededor del grupo
+         - placeholder, size, maxlength: presentación nativa
+         - editable, enable: funcionales (NO cambiar, solo verificar que viven)
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:textfield id="campo_nombre"
+                      bind="control.nombre"
+                      cssClass="audit-field"
+                      labelClass="audit-label"
+                      wrapperClass="audit-wrapper"
+                      containerClass="audit-wrapper"
+                      label="Nombre completo"
+                      placeholder="Ingrese su nombre"
+                      size="30"
+                      maxlength="50"
+                      editable="true"
+                      enable="true"
+                      event="onChange=validar_nombre"/>
+
+    <!-- ====================================================================
+         PRUEBA 3: jforms:textfield (segundo, para verificar wrapperClass
+         en combinación y el orden de render).
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:textfield id="campo_email"
+                      bind="control.email"
+                      cssClass="audit-field"
+                      labelClass="audit-label"
+                      wrapperClass="audit-wrapper"
+                      label="Correo electrónico"
+                      placeholder="usuario@empresa.com"
+                      editable="true"/>
+
+    <!-- ====================================================================
+         PRUEBA 4: jforms:button
+         - cssClass: clase del botón
+         - Verificar estilos de estado (disabled) si enable=false
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:button id="btn_guardar"
+                   bind="control.guardar"
+                   cssClass="audit-btn"
+                   label="Guardar"
+                   enable="true"
+                   event="onClick=guardar_registro"/>
+
+    <jforms:button id="btn_cancelar"
+                   bind="control.cancelar"
+                   cssClass="audit-btn"
+                   label="Cancelar"
+                   enable="true"
+                   event="onClick=cancelar_registro"/>
+
+    <!-- ====================================================================
+         PRUEBA 5: jforms:button DESHABILITADO
+         Verificar que el atributo enable=false setea disabled y
+         que cssClass sigue aplicando. RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:button id="btn_borrar"
+                   bind="control.borrar"
+                   cssClass="audit-btn"
+                   label="Borrar"
+                   enable="false"
+                   event="onClick=borrar_registro"/>
+
+    <!-- ====================================================================
+         PRUEBA 6: jforms:checkbox
+         - cssClass: clase del checkbox
+         - labelClass: clase del <label>
+         - checked para valor inicial
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:checkbox id="chk_activo"
+                     bind="control.activo"
+                     cssClass="audit-check"
+                     labelClass="audit-label"
+                     wrapperClass="audit-wrapper"
+                     label="Usuario activo"
+                     checked="true"
+                     enable="true"/>
+
+    <!-- ====================================================================
+         PRUEBA 7: jforms:combox (select) + jforms:comboValue (option)
+         - cssClass: clase del <select>
+         - labelClass: clase del <label>
+         - wrapperClass: contenedor
+         - listOfValues: referencia a lista (funcional, NO tocar)
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:combox id="combo_ciudad"
+                   bind="control.ciudad"
+                   cssClass="audit-select"
+                   labelClass="audit-label"
+                   wrapperClass="audit-wrapper"
+                   label="Ciudad"
+                   listOfValues="lista_ciudades"
+                   enable="true">
+
+      <!-- comboValue: opción estática. Verificar label/value y si acepta cssClass -->
+      <jforms:comboValue value="1" label="Bogotá" cssClass="audit-option"/>
+      <jforms:comboValue value="2" label="Medellín"/>
+      <jforms:comboValue value="3" label="Cali"/>
+      <jforms:comboValue value="4" label="Barranquilla"/>
+
+    </jforms:combox>
+
+    <!-- ====================================================================
+         PRUEBA 8: jforms:combobox (variante) + comboValue
+         Algunos frameworks distinguen combox de combobox; probar ambos.
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:combobox id="combo_pais"
+                     bind="control.pais"
+                     cssClass="audit-select"
+                     labelClass="audit-label"
+                     wrapperClass="audit-wrapper"
+                     label="País"
+                     listOfValues="lista_paises"
+                     enable="true">
+      <jforms:comboValue value="CO" label="Colombia"/>
+      <jforms:comboValue value="MX" label="México"/>
+      <jforms:comboValue value="AR" label="Argentina"/>
+    </jforms:combobox>
+
+    <!-- ====================================================================
+         PRUEBA 9: jforms:textarea
+         - cssClass: clase del textarea
+         - labelClass, wrapperClass
+         - rows/cols para presentación nativa
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:textarea id="txt_observaciones"
+                     bind="control.observaciones"
+                     cssClass="audit-textarea"
+                     labelClass="audit-label"
+                     wrapperClass="audit-wrapper"
+                     label="Observaciones"
+                     rows="4"
+                     cols="50"
+                     placeholder="Detalle sus observaciones"
+                     editable="true"/>
+
+    <!-- ====================================================================
+         PRUEBA 10: jforms:frame DIALOGO (modal)
+         Verificar si el frame soporta atributos de modal:
+         modal="true", width, height, resizable
+         y si cssClass aplica al overlay/contenedor del diálogo.
+         RESULTADO: [ ]
+         ====================================================================
+    -->
+    <jforms:frame id="dialogo_confirmacion"
+                  bind="control.dialogoConf"
+                  modal="true"
+                  title="Confirmar acción"
+                  width="400"
+                  height="200"
+                  resizable="false"
+                  cssClass="audit-frame">
+      <p>¿Está seguro de realizar la acción?</p>
+      <jforms:button id="btn_aceptar"
+                     bind="control.aceptar"
+                     cssClass="audit-btn"
+                     label="Aceptar"
+                     enable="true"
+                     event="onClick=aceptar_accion"/>
+      <jforms:button id="btn_cancelar2"
+                     bind="control.cancelar2"
+                     cssClass="audit-btn"
+                     label="Cancelar"
+                     enable="true"
+                     event="onClick=cancelar_accion"/>
+    </jforms:frame>
+
+  </jforms:frame>
+
+</body>
+</html>

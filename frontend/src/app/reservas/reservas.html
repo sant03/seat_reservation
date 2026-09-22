@@ -1,0 +1,196 @@
+<div class="reservas">
+  @if (loading()) {
+    <div class="loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <p>Cargando Reservas…</p>
+    </div>
+  } @else if (model(); as m) {
+    <div class="head">
+      <div class="head-title">
+        <h1>Reservas</h1>
+        <span class="sub">{{ contador() }}</span>
+      </div>
+      <button mat-raised-button class="pill pill-primary nueva-btn" (click)="nueva()">
+        <mat-icon>person_add</mat-icon> Nueva reserva
+      </button>
+    </div>
+
+    <div class="filters">
+      <input
+        type="text"
+        placeholder="Buscar por nombre..."
+        class="search-input"
+        [value]="filtro()"
+        (input)="filtro.set($any($event.target).value)"
+      />
+
+      <div class="chip-set" role="group" aria-label="Filtrar por día">
+        <button type="button" class="chipf" [class.activo]="filtroDia() === 'TODOS'" (click)="filtroDia.set('TODOS')">
+          <mat-icon>apps</mat-icon> Todos
+        </button>
+        @for (d of colDias; track d.key) {
+          <button type="button" class="chipf" [class.activo]="filtroDia() === d.key" (click)="filtroDia.set(d.key)">
+            {{ d.name }}
+          </button>
+        }
+      </div>
+
+      <div class="chip-set" role="group" aria-label="Filtrar por estado">
+        <button type="button" class="chipf" [class.activo]="filtroEstado() === 'TODOS'" (click)="filtroEstado.set('TODOS')">
+          Todos
+        </button>
+        @for (e of estados(); track e) {
+          <button type="button" class="chipf" [class.activo]="filtroEstado() === e" (click)="filtroEstado.set(e)">
+            {{ diaState(e) }}
+          </button>
+        }
+      </div>
+
+      <span class="spacer"></span>
+
+      <mat-button-toggle-group
+        class="view-toggle"
+        [value]="vista()"
+        (change)="vista.set($event.value)"
+        aria-label="Vista de reservas"
+        hideSingleSelectionIndicator
+      >
+        <mat-button-toggle value="tarjetas" aria-label="Vista de tarjetas">
+          <mat-icon>grid_view</mat-icon>
+        </mat-button-toggle>
+        <mat-button-toggle value="tabla" aria-label="Vista de tabla">
+          <mat-icon>table_rows</mat-icon>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    @if (vistaEfectiva() === 'tarjetas') {
+      <div class="cards">
+        @for (row of rows(); track row.persona.id ?? row.persona.nombre) {
+          <div class="card" [class.cancelada]="row.persona.estadoGlobal === 'CANCELADO'">
+            <div class="card-top">
+              <div class="avatar" [style.background]="avColor(row.persona.nombre)">
+                {{ avInitials(row.persona.nombre) }}
+              </div>
+              <div class="ident">
+                <div class="nombre">{{ row.persona.nombre }}</div>
+                <div class="comentario">{{ row.persona.comentarios || 'Sin notas' }}</div>
+              </div>
+              <div class="acciones">
+                <button mat-icon-button class="acc-btn" [matMenuTriggerFor]="accMenu" aria-label="Opciones">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #accMenu="matMenu">
+                  <button mat-menu-item (click)="editar(row.persona)">
+                    <mat-icon>edit</mat-icon> Editar
+                  </button>
+                  <button mat-menu-item (click)="eliminar(row.persona)">
+                    <mat-icon>delete</mat-icon> Eliminar
+                  </button>
+                </mat-menu>
+              </div>
+            </div>
+
+            <div class="dias" [class.solo]="filtroDia() !== 'TODOS'">
+              @for (d of diasVisibles(); track d.key) {
+                <div class="dia" [class.cancelado]="row.persona[d.key].estado === 'CANCELADO'">
+                  <div class="dia-top">
+                    <span class="dia-name">{{ d.name }}</span>
+                    <span class="dia-puestos">{{ row.persona[d.key].puestos }} puestos</span>
+                  </div>
+                  <div class="dia-chips">
+                    <span class="chip" [class]="coinClass(row.persona[d.key].estado)">
+                      {{ diaState(row.persona[d.key].estado) }}
+                    </span>
+                    <span class="monto">{{ money(row.persona[d.key].pagado) }} pág</span>
+                    @if (row.persona[d.key].pendiente > 0) {
+                      <span class="monto pend">{{ money(row.persona[d.key].pendiente) }} pend</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="card-foot">
+              <span class="total">{{ money(totalDe(row.persona)) }}</span>
+              <span class="chip big" [class]="coinClass(estadoDe(row.persona))">
+                {{ diaState(estadoDe(row.persona)) }}
+              </span>
+            </div>
+          </div>
+        } @empty {
+          <div class="vacio">
+            <mat-icon>search_off</mat-icon>
+            <p>No hay personas que coincidan con el filtro.</p>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table mat-table [dataSource]="rows()">
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Nombre</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="nombre">{{ row.persona.nombre }}</span>
+              @if (row.persona.comentarios) {
+                <div class="comentario">{{ row.persona.comentarios }}</div>
+              }
+            </td>
+          </ng-container>
+
+          @for (d of diasVisibles(); track d.key) {
+            <ng-container [matColumnDef]="d.key">
+              <th mat-header-cell *matHeaderCellDef>{{ d.name }}</th>
+              <td mat-cell *matCellDef="let row">
+                <div class="dia-cell" [class.cancelado]="row.persona[d.key].estado === 'CANCELADO'">
+                  <span class="puestos-n">{{ row.persona[d.key].puestos }}</span>
+                  <span class="chip" [class]="'st-' + row.persona[d.key].estado.toLowerCase()">
+                    {{ diaState(row.persona[d.key].estado) }}
+                  </span>
+                  <span class="monto">{{ money(row.persona[d.key].pagado) }} pág</span>
+                  @if (row.persona[d.key].pendiente > 0) {
+                    <span class="monto pend">{{ money(row.persona[d.key].pendiente) }} pend</span>
+                  }
+                </div>
+              </td>
+            </ng-container>
+          }
+
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let row">{{ money(totalDe(row.persona)) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
+            <td mat-cell *matCellDef="let row">
+              <span class="chip" [class]="'st-' + estadoDe(row.persona).toLowerCase()">
+                {{ diaState(estadoDe(row.persona)) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row" class="actions">
+              <button mat-icon-button class="acc-btn" [matMenuTriggerFor]="accMenu" aria-label="Opciones">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #accMenu="matMenu">
+                <button mat-menu-item (click)="editar(row.persona)">
+                  <mat-icon>edit</mat-icon> Editar
+                </button>
+                <button mat-menu-item (click)="eliminar(row.persona)">
+                  <mat-icon>delete</mat-icon> Eliminar
+                </button>
+              </mat-menu>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+        </table>
+      </div>
+    }
+  }
+</div>

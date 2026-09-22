@@ -1,0 +1,126 @@
+.page {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1023px) {
+  .page {
+    padding: 0;
+  }
+}
+
+h1 {
+  font-size: 18px;
+  margin: 8px 0 16px;
+}
+
+.card {
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: none;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  padding-top: 8px;
+}
+
+/* ---- Campos con el patrón de la app (.search-input) ---- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.grid .campo {
+  margin-bottom: 0;
+}
+
+.campo-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.campo-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.campo-input:focus {
+  border-color: #3b82f6;
+}
+
+.current {
+  margin-top: 8px;
+  color: var(--muted-strong);
+}
+
+.full {
+  width: 100%;
+}
+
+.savebar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.errorbox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--red-bg);
+  color: var(--red-text);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.commit-title {
+  font-size: 14px;
+}
+
+.commit-meta {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+mat-list-item {
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.danger-zone {
+  border: 2px solid var(--red-bg);
+  background: var(--red-bg);
+}
+
+.danger-zone mat-card-title {
+  color: var(--red-text);
+}
+
+.danger-text {
+  color: var(--muted-strong);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}

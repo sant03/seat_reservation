@@ -1,0 +1,75 @@
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    class="nav"
+    [mode]="mobile() ? 'over' : 'side'"
+    [opened]="mobile() ? navOpen() : true"
+    [fixedInViewport]="true"
+    [class.collapsed]="mobile() && !navOpen()"
+  >
+    <div class="sidebar-pill">
+      <div class="brand">
+        <div class="brand-icon-wrap">
+          <mat-icon>airline_seat_recline_extra</mat-icon>
+        </div>
+      </div>
+
+      <nav class="nav-items">
+        <a routerLink="/dashboard" routerLinkActive="activo" (click)="navClick()" class="nav-item">
+          <div class="icon-circle" data-color="blue">
+            <mat-icon>dashboard</mat-icon>
+          </div>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a routerLink="/asistencia" routerLinkActive="activo" (click)="navClick()" class="nav-item">
+          <div class="icon-circle" data-color="green">
+            <mat-icon>fact_check</mat-icon>
+          </div>
+          <span class="nav-label">Asistencia</span>
+        </a>
+        <a routerLink="/config" routerLinkActive="activo" (click)="navClick()" class="nav-item">
+          <div class="icon-circle" data-color="gray">
+            <mat-icon>settings</mat-icon>
+          </div>
+          <span class="nav-label">Configuración</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <button
+          class="nav-foot"
+          [disabled]="!dirty() || saving()"
+          (click)="guardar()"
+          aria-label="Guardar en Excel"
+        >
+          <div class="icon-circle" data-color="blue">
+            <mat-icon>{{ saving() ? 'hourglass_top' : 'save' }}</mat-icon>
+          </div>
+          <span class="nav-label">{{ saving() ? 'Guardando…' : 'Guardar en Excel' }}</span>
+        </button>
+        <button class="nav-foot" (click)="exportar()" [disabled]="saving()" aria-label="Descargar Excel">
+          <div class="icon-circle" data-color="green">
+            <mat-icon>download</mat-icon>
+          </div>
+          <span class="nav-label">Descargar Excel</span>
+        </button>
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content class="content-area">
+    <div class="router-host">
+      <router-outlet></router-outlet>
+    </div>
+    @if (dirty()) {
+      <div class="dirty-toast">
+        <mat-icon>cloud_upload</mat-icon>
+        <span>{{ saving() ? 'Guardando cambios…' : 'Cambios sin guardar' }}</span>
+      </div>
+    }
+    @if (mobile()) {
+      <button class="fab" [class.open]="navOpen()" (click)="toggleNav()" aria-label="Menú">
+        <mat-icon>{{ navOpen() ? 'close' : 'airline_seat_recline_extra' }}</mat-icon>
+      </button>
+    }
+  </mat-sidenav-content>
+</mat-sidenav-container>

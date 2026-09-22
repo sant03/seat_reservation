@@ -1,0 +1,106 @@
+@if (!esPagina()) {
+  <h2 mat-dialog-title>
+    {{ data.persona ? 'Editar reserva' : 'Nueva reserva' }}
+  </h2>
+} @else {
+  <div class="page-head">
+    <button class="back" (click)="cerrar()" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ data.persona ? 'Editar reserva' : 'Nueva reserva' }}</h1>
+  </div>
+}
+
+<mat-dialog-content [class.page-body]="esPagina()">
+  <label class="campo">
+    <span class="campo-label">Nombre de la persona / familia</span>
+    <input
+      class="campo-input"
+      type="text"
+      placeholder="Ej. Familia Gómez"
+      [ngModel]="nombre()"
+      (ngModelChange)="nombre.set($event)"
+      (keydown.enter)="aceptar()"
+    />
+  </label>
+
+  @if (errores().length) {
+    <div class="errors">
+      @for (e of errores(); track e) {
+        <div><mat-icon>error_outline</mat-icon> {{ e }}</div>
+      }
+    </div>
+  }
+
+  <div class="dias">
+    @for (d of DIA; track d.key) {
+      <div class="dia">
+        <div class="dia-title">{{ d.name }}</div>
+
+        <label class="campo">
+          <span class="campo-label">Puestos</span>
+          <input
+            class="campo-input"
+            type="number"
+            min="0"
+            [max]="capacidad()"
+            [ngModel]="dias()[d.key].puestos"
+            (ngModelChange)="onPuestosChange(d.key, $event)"
+          />
+        </label>
+
+        <label class="campo">
+          <span class="campo-label">Estado</span>
+          <select
+            class="campo-input campo-select"
+            [ngModel]="dias()[d.key].estado"
+            (ngModelChange)="onEstadoChange(d.key, $event)"
+          >
+            @for (e of ESTADOS; track e) {
+              <option [value]="e">{{ ESTADO_LABELS[e] }}</option>
+            }
+          </select>
+        </label>
+
+        @if (dias()[d.key].estado === 'ABONO') {
+          <label class="campo">
+            <span class="campo-label">Abono ($)</span>
+            <input
+              class="campo-input"
+              type="number"
+              min="0"
+              [ngModel]="dias()[d.key].pagado"
+              (ngModelChange)="setDia(d.key, { pagado: $event })"
+            />
+          </label>
+        }
+
+        <div class="tot">
+          Total: <strong>{{ fmtMoney(totalDia()[d.key].total) }}</strong>
+          @if (totalDia()[d.key].pendiente > 0) {
+            <span class="pend"> · pendiente {{ fmtMoney(totalDia()[d.key].pendiente) }}</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="grand">
+    Total general: <strong>{{ fmtMoney(totalGeneral()) }}</strong>
+    · Pagado: <strong>{{ fmtMoney(pagadoGeneral()) }}</strong>
+    · Valor por puesto: {{ fmtMoney(valor()) }}
+    <div class="disp-note">{{ disponibilidadText() }}</div>
+  </div>
+
+  <label class="campo">
+    <span class="campo-label">Comentarios</span>
+    <textarea class="campo-input" rows="2" [ngModel]="comentarios()" (ngModelChange)="comentarios.set($event)"></textarea>
+  </label>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cerrar()">Cancelar</button>
+  <button mat-raised-button color="primary" [disabled]="!!errores().length" (click)="aceptar()">
+    Guardar
+  </button>
+</mat-dialog-actions>

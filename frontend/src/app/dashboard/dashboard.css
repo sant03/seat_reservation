@@ -1,0 +1,160 @@
+.page {
+  padding: 20px;
+}
+
+@media (max-width: 1023px) {
+  .page {
+    padding: 0;
+  }
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
+.page-head .sub {
+  margin: 2px 0 0;
+  color: var(--muted);
+}
+
+h1 {
+  font-size: 18px;
+  margin: 8px 0 16px;
+}
+
+h2 {
+  font-size: 16px;
+  margin: 24px 0 12px;
+  color: var(--muted-strong);
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.errorbox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: var(--red-bg);
+  color: var(--red-text);
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card.mat-mdc-card {
+  border-radius: 12px;
+  box-shadow: none;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.card .mat-mdc-card-content {
+  padding: 16px;
+}
+
+.money .mat-mdc-card-content {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.money mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #6ea8fe;
+}
+
+.warn-card mat-icon {
+  color: var(--amber-text);
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.big {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dia-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.dia-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fecha {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.puestos {
+  margin-bottom: 8px;
+}
+
+.dia .big {
+  font-size: 34px;
+}
+
+.over {
+  color: var(--red-text);
+  font-weight: 600;
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.ok {
+  color: var(--green-text);
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.mini {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted-strong);
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+}
+
+/* Panel que contiene la sección de reservas (tarjetas/grilla + tabla) */
+.panel-reservas {
+  margin-top: 28px;
+}
