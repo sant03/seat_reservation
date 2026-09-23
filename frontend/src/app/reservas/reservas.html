@@ -48,6 +48,39 @@
 
       <span class="spacer"></span>
 
+      <button mat-stroked-button class="sort-btn" [matMenuTriggerFor]="sortMenu" aria-label="Ordenar reservas">
+        <mat-icon>swap_vert</mat-icon>
+        <span>{{ ordenLabel() }}</span>
+      </button>
+      <mat-menu #sortMenu="matMenu">
+        <button mat-menu-item (click)="ordenar('nombre', 1)">
+          <mat-icon>{{ esOrden('nombre', 1) ? 'check' : '' }}</mat-icon>
+          <span>Nombre (A-Z)</span>
+        </button>
+        <button mat-menu-item (click)="ordenar('nombre', -1)">
+          <mat-icon>{{ esOrden('nombre', -1) ? 'check' : '' }}</mat-icon>
+          <span>Nombre (Z-A)</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="ordenar('total', -1)">
+          <mat-icon>{{ esOrden('total', -1) ? 'check' : '' }}</mat-icon>
+          <span>Valor total mayor a menor</span>
+        </button>
+        <button mat-menu-item (click)="ordenar('total', 1)">
+          <mat-icon>{{ esOrden('total', 1) ? 'check' : '' }}</mat-icon>
+          <span>Valor total menor a mayor</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="ordenar('puestos', -1)">
+          <mat-icon>{{ esOrden('puestos', -1) ? 'check' : '' }}</mat-icon>
+          <span>Más puestos reservados</span>
+        </button>
+        <button mat-menu-item (click)="ordenar('puestos', 1)">
+          <mat-icon>{{ esOrden('puestos', 1) ? 'check' : '' }}</mat-icon>
+          <span>Menos puestos reservados</span>
+        </button>
+      </mat-menu>
+
       <mat-button-toggle-group
         class="view-toggle"
         [value]="vista()"
@@ -80,7 +113,7 @@
                 <button mat-icon-button class="acc-btn" [matMenuTriggerFor]="accMenu" aria-label="Opciones">
                   <mat-icon>more_vert</mat-icon>
                 </button>
-                <mat-menu #accMenu="matMenu">
+                <mat-menu #accMenu="matMenu" xPosition="before">
                   <button mat-menu-item (click)="editar(row.persona)">
                     <mat-icon>edit</mat-icon> Editar
                   </button>
@@ -112,7 +145,12 @@
             </div>
 
             <div class="card-foot">
-              <span class="total">{{ money(totalDe(row.persona)) }}</span>
+              <div class="card-foot-left">
+                <span class="total">{{ money(totalDe(row.persona)) }}</span>
+                @if (pendienteDe(row.persona) > 0 && pendienteDe(row.persona) !== totalDe(row.persona)) {
+                  <span class="total-pend">{{ money(pendienteDe(row.persona)) }} pend</span>
+                }
+              </div>
               <span class="chip big" [class]="coinClass(estadoDe(row.persona))">
                 {{ diaState(estadoDe(row.persona)) }}
               </span>

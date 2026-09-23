@@ -10,7 +10,7 @@
     <div class="day-tabs">
       @for (d of dias; track d.key) {
         <button class="day-tab" [class.activo]="diaSel() === d.key" (click)="setDia(d.key)">
-          <mat-icon>{{ d.key === 'dia1' ? 'today' : d.key === 'dia2' ? 'calendar_view_day' : 'date_range' }}</mat-icon>
+          <mat-icon>today</mat-icon>
           {{ d.name }}
           <span class="fecha-tab">· {{ fechaDia(d.key) }}</span>
         </button>
@@ -91,6 +91,37 @@
           <mat-icon>apps</mat-icon> Todos
         </button>
       </div>
+
+      <div class="pend-filter">
+        <span class="pend-label">En el bus:</span>
+        <button class="day-tab" [class.activo]="filtroArriba() === 'ida'" (click)="setArriba('ida')">
+          <mat-icon>north_east</mat-icon> Ida
+        </button>
+        <button class="day-tab" [class.activo]="filtroArriba() === 'venida'" (click)="setArriba('venida')">
+          <mat-icon>south_west</mat-icon> Venida
+        </button>
+        <button class="day-tab" [class.activo]="filtroArriba() === 'ambos'" (click)="setArriba('ambos')">
+          <mat-icon>done_all</mat-icon> Ida y venida
+        </button>
+        <button class="day-tab" [class.activo]="filtroArriba() === 'TODOS'" (click)="setArriba('TODOS')">
+          <mat-icon>apps</mat-icon> Todos
+        </button>
+      </div>
+
+      <button mat-stroked-button class="sort-btn" [matMenuTriggerFor]="sortMenu" aria-label="Ordenar por nombre">
+        <mat-icon>swap_vert</mat-icon>
+        <span>{{ ordenLabel() }}</span>
+      </button>
+      <mat-menu #sortMenu="matMenu">
+        <button mat-menu-item (click)="ordenar(1)">
+          <mat-icon>{{ esOrden(1) ? 'check' : '' }}</mat-icon>
+          <span>Nombre (A-Z)</span>
+        </button>
+        <button mat-menu-item (click)="ordenar(-1)">
+          <mat-icon>{{ esOrden(-1) ? 'check' : '' }}</mat-icon>
+          <span>Nombre (Z-A)</span>
+        </button>
+      </mat-menu>
     </div>
 
     <div class="personas">

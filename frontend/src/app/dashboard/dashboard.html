@@ -10,7 +10,7 @@
   } @else if (model(); as m) {
     <header class="page-head">
       <div>
-        <h1>{{ m.config.eventoNombre || 'Asamblea de Circuito' }} — Reserva de bus</h1>
+        <h1>{{ m.config.eventoNombre || 'No has creado un evento' }}</h1>
         <p class="sub">Capacidad {{ m.config.capacidadBus }} puestos / día · Valor ${{ m.config.valorPuesto }} por cupo (ida y vuelta)</p>
       </div>
       <button mat-stroked-button class="pill" (click)="theme.toggle()">
@@ -26,6 +26,7 @@
           <div>
             <span class="label">Pagado</span>
             <span class="big">{{ info()?.pagado }}</span>
+            <span class="kpi-info">Dinero ya recibido por los pasajeros</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -36,6 +37,7 @@
           <div>
             <span class="label">Pendiente</span>
             <span class="big">{{ info()?.pendiente }}</span>
+            <span class="kpi-info">Saldo que falta por cobrar</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -46,6 +48,7 @@
           <div>
             <span class="label">Recaudación esperada</span>
             <span class="big">{{ info()?.esperado }}</span>
+            <span class="kpi-info">Total estimado si se cobra todo</span>
           </div>
         </mat-card-content>
       </mat-card>
@@ -59,6 +62,7 @@
             @if ((info()?.cancelados) ?? 0 > 0) {
               <span class="sub">({{ info()?.cancelados }} canceladas)</span>
             }
+            <span class="kpi-info">Una persona puede reservar mas de un puesto</span>
           </div>
         </mat-card-content>
       </mat-card>

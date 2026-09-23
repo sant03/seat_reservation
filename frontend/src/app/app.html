@@ -4,6 +4,7 @@
     [mode]="mobile() ? 'over' : 'side'"
     [opened]="mobile() ? navOpen() : true"
     [fixedInViewport]="true"
+    (openedChange)="navOpen.set($event)"
     [class.collapsed]="mobile() && !navOpen()"
   >
     <div class="sidebar-pill">
@@ -57,19 +58,28 @@
   </mat-sidenav>
 
   <mat-sidenav-content class="content-area">
+    @if (mobile()) {
+      <header class="hero">
+        <div class="hero-icon">
+          <mat-icon>airline_seat_recline_extra</mat-icon>
+        </div>
+        <span class="hero-name">Seat A Seat</span>
+      </header>
+    }
     <div class="router-host">
       <router-outlet></router-outlet>
     </div>
-    @if (dirty()) {
-      <div class="dirty-toast">
+    @if (toastStage() !== 'hidden') {
+      <div class="dirty-toast" [class.collapsed]="toastStage() === 'collapsed'" (click)="collapseToast()">
         <mat-icon>cloud_upload</mat-icon>
         <span>{{ saving() ? 'Guardando cambios…' : 'Cambios sin guardar' }}</span>
       </div>
     }
-    @if (mobile()) {
-      <button class="fab" [class.open]="navOpen()" (click)="toggleNav()" aria-label="Menú">
-        <mat-icon>{{ navOpen() ? 'close' : 'airline_seat_recline_extra' }}</mat-icon>
-      </button>
-    }
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+@if (mobile()) {
+  <button class="fab" [class.open]="navOpen()" (click)="toggleNav()" aria-label="Menú">
+    <mat-icon>{{ navOpen() ? 'close' : 'airline_seat_recline_extra' }}</mat-icon>
+  </button>
+}

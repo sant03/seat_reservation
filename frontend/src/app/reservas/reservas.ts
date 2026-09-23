@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
@@ -21,6 +22,9 @@ interface Row {
   persona: Reserva;
 }
 
+type OrdenCampo = 'nombre' | 'total' | 'puestos';
+type Orden = { campo: OrdenCampo; dir: 1 | -1 };
+
 @Component({
   imports: [
     MatButtonModule,
@@ -31,6 +35,7 @@ interface Row {
     MatProgressSpinnerModule,
     MatButtonToggleModule,
     MatMenuModule,
+    MatDividerModule,
     MatTableModule,
     MatDialogModule,
     MatSnackBarModule,
@@ -55,6 +60,7 @@ export class Reservas {
   readonly vista = signal<'tarjetas' | 'tabla'>('tarjetas');
   readonly mobile = signal(window.innerWidth < 1024);
   readonly vistaEfectiva = computed(() => (this.mobile() ? 'tarjetas' : this.vista()));
+  readonly orden = signal<Orden>({ campo: 'nombre', dir: 1 });
 
   constructor() {
     window.addEventListener('resize', () => this.mobile.set(window.innerWidth < 1024));
@@ -92,7 +98,38 @@ export class Reservas {
         const state = porDia ? p[dk].estado : p.estadoGlobal;
         return state === es;
       })
-      .map((persona) => ({ persona }));
+      .map((persona) => ({ persona }))
+      .sort((a, b) => {
+        const { campo, dir } = this.orden();
+        if (campo === 'nombre') {
+          return a.persona.nombre.localeCompare(b.persona.nombre, 'es', { sensitivity: 'base' }) * dir;
+        }
+        if (campo === 'puestos') {
+          return (this.puestosDe(a.persona) - this.puestosDe(b.persona)) * dir;
+        }
+        return (this.totalDe(a.persona) - this.totalDe(b.persona)) * dir;
+      });
+  });
+
+  private puestosDe(p: Reserva): number {
+    const dk = this.filtroDia();
+    return dk === 'TODOS' ? p.dia1.puestos + p.dia2.puestos + p.dia3.puestos : p[dk].puestos;
+  }
+
+  ordenar(campo: OrdenCampo, dir: 1 | -1): void {
+    this.orden.set({ campo, dir });
+  }
+
+  esOrden(campo: OrdenCampo, dir: 1 | -1): boolean {
+    const o = this.orden();
+    return o.campo === campo && o.dir === dir;
+  }
+
+  readonly ordenLabel = computed(() => {
+    const { campo, dir } = this.orden();
+    if (campo === 'nombre') return dir === 1 ? 'Nombre A-Z' : 'Nombre Z-A';
+    if (campo === 'total') return dir === 1 ? 'Valor ↑' : 'Valor ↓';
+    return dir === 1 ? 'Puestos ↑' : 'Puestos ↓';
   });
 
   estadoDe(p: Reserva): string {
@@ -103,6 +140,11 @@ export class Reservas {
   totalDe(p: Reserva): number {
     const dk = this.filtroDia();
     return dk === 'TODOS' ? p.total : p[dk].total;
+  }
+
+  pendienteDe(p: Reserva): number {
+    const dk = this.filtroDia();
+    return dk === 'TODOS' ? p.valorPendiente : p[dk].pendiente;
   }
 
   readonly contador = computed(() => {

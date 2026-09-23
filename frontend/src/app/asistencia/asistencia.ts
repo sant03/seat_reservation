@@ -4,12 +4,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatMenuModule } from '@angular/material/menu';
 import { StateService } from '../services/state.service';
 import { Reserva, DiaKey } from '../models';
 import { fmtFecha, initials, avatarColor } from '../utils';
 
 @Component({
-  imports: [MatButtonModule, MatIconModule, MatCheckboxModule, MatCardModule, MatDividerModule],
+  imports: [MatButtonModule, MatIconModule, MatCheckboxModule, MatCardModule, MatDividerModule, MatMenuModule],
   selector: 'app-asistencia',
   templateUrl: './asistencia.html',
   styleUrl: './asistencia.css'
@@ -22,6 +23,8 @@ export class AsistenciaPage {
   readonly diaSel = signal<DiaKey>('dia1');
   readonly filtro = signal('');
   readonly filtroPendiente = signal<'TODOS' | 'ida' | 'venida'>('TODOS');
+  readonly filtroArriba = signal<'TODOS' | 'ida' | 'venida' | 'ambos'>('TODOS');
+  readonly orden = signal<1 | -1>(1);
 
   private expandidaId = signal<string | null>(null);
 
@@ -90,12 +93,44 @@ export class AsistenciaPage {
         const pendientes = a.length < r[dk].puestos || a.slice(0, r[dk].puestos).some((x) => !x[pend]);
         if (!pendientes) return false;
       }
+      const arriba = this.filtroArriba();
+      if (arriba !== 'TODOS') {
+        const dirs: Array<'ida' | 'venida'> = arriba === 'ambos' ? ['ida', 'venida'] : [arriba];
+        if (!this.enElBus(r, dk, dirs)) return false;
+      }
       return true;
-    });
+    }).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }) * this.orden());
   });
 
   setPendiente(p: 'TODOS' | 'ida' | 'venida'): void {
     this.filtroPendiente.set(p);
+  }
+
+  ordenar(dir: 1 | -1): void {
+    this.orden.set(dir);
+  }
+
+  esOrden(dir: 1 | -1): boolean {
+    return this.orden() === dir;
+  }
+
+  readonly ordenLabel = computed(() => (this.orden() === 1 ? 'Nombre A-Z' : 'Nombre Z-A'));
+
+  setArriba(p: 'TODOS' | 'ida' | 'venida' | 'ambos'): void {
+    this.filtroArriba.set(p);
+  }
+
+  private enElBus(r: Reserva, dk: DiaKey, dirs: Array<'ida' | 'venida'>): boolean {
+    const n = r[dk].puestos;
+    if (n <= 0) return false;
+    const a = r[dk].asistencia ?? [];
+    if (a.length < n) return false;
+    for (let i = 0; i < n; i++) {
+      for (const dir of dirs) {
+        if (!a[i][dir]) return false;
+      }
+    }
+    return true;
   }
 
   readonly resumenDia = computed(() => {

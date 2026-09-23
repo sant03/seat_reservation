@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,6 +32,9 @@ export class App {
   readonly navOpen = signal(false);
   readonly mobile = signal(window.innerWidth < 1024);
 
+  readonly toastStage = signal<'hidden' | 'expanded' | 'collapsed'>('hidden');
+  private toastTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
     const onResize = () => this.mobile.set(window.innerWidth < 1024);
     window.addEventListener('resize', onResize);
@@ -40,6 +43,23 @@ export class App {
         this.navOpen.set(false);
       }
     });
+    effect(() => {
+      const d = this.dirty();
+      if (!d) {
+        if (this.toastTimer) clearTimeout(this.toastTimer);
+        this.toastStage.set('hidden');
+        return;
+      }
+      if (this.toastTimer) clearTimeout(this.toastTimer);
+      this.toastStage.set('expanded');
+      if (this.mobile()) {
+        this.toastTimer = setTimeout(() => this.toastStage.set('collapsed'), 2000);
+      }
+    });
+  }
+
+  collapseToast(): void {
+    this.toastStage.set('collapsed');
   }
 
   toggleNav(): void {
