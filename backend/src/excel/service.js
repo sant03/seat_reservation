@@ -154,6 +154,7 @@ function readPerson(ws, r, valorPuesto) {
   }
   const totalGlobal = num(col(ws, F.COLS.total, r));
   const valorPagado = num(col(ws, F.COLS.valorPagado, r));
+  const comentarios = str(col(ws, F.COLS.comentarios, r));
   let estadoGlobal = stateFromLabel(str(col(ws, F.COLS.estadoGlobal, r)));
   if (F.LABEL_TO_STATE[str(col(ws, F.COLS.estadoGlobal, r)).trim().toUpperCase()] === undefined) {
     estadoGlobal = deriveGlobalEstado({ dia1: dia.dia1, dia2: dia.dia2, dia3: dia.dia3 });
@@ -175,7 +176,8 @@ function readPerson(ws, r, valorPuesto) {
     total: totalGlobal || F.DAYS.reduce((s, d) => s + dia[d.key].total, 0),
     estadoGlobal,
     valorPagado,
-    valorPendiente: Math.max(0, totalGlobal - valorPagado)
+    valorPendiente: Math.max(0, totalGlobal - valorPagado),
+    comentarios
   };
 }
 
@@ -445,18 +447,52 @@ function buildEmptyWorkbook(model) {
   return applyModelToWorkbook(workbook, model);
 }
 
+// Comprueba que un buffer sea un ZIP .xlsx minimamente sano (firma PK y
+// registro EOCD presente). Evita servir archivos corruptos por UTF-8 o por
+// serializacion rota acumulada en el almacenamiento.
+function validZip(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 22) return false;
+  if (buffer[0] !== 0x50 || buffer[1] !== 0x4b) return false;
+  const eocd = buffer.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+  if (eocd < 0 || buffer.length - eocd < 22) return false;
+  const entries = buffer.readUInt16LE(eocd + 10);
+  const cdOffset = buffer.readUInt32LE(eocd + 16);
+  const cdSize = buffer.readUInt32LE(eocd + 12);
+  if (entries === 0 || cdOffset + cdSize > buffer.length) return false;
+  if (buffer.readUInt32LE(cdOffset) !== 0x02014b50) return false;
+  return true;
+}
+
+// Reempaqueta un workbook cargado para que el archivo resultante sea siempre
+// un ZIP limpio generado por exceljs, sin estado acumulado del original.
+async function repackage(workbook) {
+  const out = Buffer.from(await workbook.xlsx.writeBuffer());
+  if (!validZip(out)) throw new Error('El empaquetado del Excel generó un archivo inválido.');
+  return out;
+}
+
 // Cuando el storage remoto (github) aún no contiene el archivo, se siembra un
 // modelo vacío en la primera lectura para que la app arranque utilizable.
 async function loadOrSeedBuffer() {
   try {
-    return await getStorage().read();
+    const buffer = await getStorage().read();
+    if (buffer && buffer.length > 0) {
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buffer);
+      stripFormulas(wb);
+      return await repackage(wb);
+    }
+    throw new Error('El archivo almacenado está vacío');
   } catch (err) {
+    // Solo se siembra un archivo vacío cuando el storage aún no tiene el
+    // archivo (404). Si existe pero está corrupto se propaga el error para no
+    // perder los datos que pudiera contener.
     const isMissing = /no se encontro|not found/i.test(err.message || '');
     if (isMissing && cfg.STORAGE_TYPE === 'github') {
       const model = { config: { ...F.DEFAULT_CONFIG }, reservas: [], tareas: [] };
-      const out = await buildEmptyWorkbook(model).xlsx.writeBuffer();
-      await getStorage().write(Buffer.from(out));
-      return Buffer.from(out);
+      const out = await repackage(buildEmptyWorkbook(model));
+      await getStorage().write(out);
+      return out;
     }
     throw err;
   }
@@ -473,8 +509,8 @@ async function saveModel(model) {
   await workbook.xlsx.load(buffer);
   stripFormulas(workbook);
   applyModelToWorkbook(workbook, model);
-  const out = await workbook.xlsx.writeBuffer();
-  const result = await getStorage().write(Buffer.from(out));
+  const out = await repackage(workbook);
+  const result = await getStorage().write(out);
   const totals = computeTotales(model.reservas || [], model.config || {});
   return { ...result, totales: totals };
 }
